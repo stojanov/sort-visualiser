@@ -16,6 +16,19 @@ rtn_type translate(rtn_type val, rtn_type val_l, rtn_type val_h, T low, T high)
     return low + (high - low) * ((rtn_type) (val - val_l) / (val_h - val_l));
 }
 
+void displayText(std::string &text, sf::Vector2f pos, sf::Color &clr, sf::Font &font, sf::RenderWindow *window)
+{
+    sf::Text renderText;
+
+    renderText.setFont(font);
+    renderText.setPosition(pos);
+    renderText.setColor(clr);
+    renderText.setCharacterSize(18);
+    renderText.setString(text.c_str());
+
+    window->draw(renderText);
+}
+
 template<typename SortAlgoT>
 class SortVisualiser
 {
@@ -82,9 +95,6 @@ public:
         m_SortAlgo.assign_swap_func(
             [&] (int id, int nextid, int sstart, int send) 
             {
-                if(m_arr[m_samples] == 1)
-                    throw "err";
-
                 m_array_changes++;
                 m_current_sortel = id;
                 m_next_id = nextid;
@@ -129,52 +139,24 @@ public:
             exit(0);
         }
 
-        sf::Text ArrayInsertText;
-        sf::Text DelayText;
-        sf::Text SortText;
-        sf::Text SamplesText;
-
-        ArrayInsertText.setFont(BebasNeue);
-        DelayText.setFont(BebasNeue);
-        SortText.setFont(BebasNeue);
-        SamplesText.setFont(BebasNeue);
-
-        ArrayInsertText.setCharacterSize(18);
-        DelayText.setCharacterSize(18);
-        SortText.setCharacterSize(18);
-        SamplesText.setCharacterSize(18);
-
-        ArrayInsertText.setFillColor(TextClr);
-        DelayText.setFillColor(TextClr);
-        SortText.setFillColor(TextClr);
-        SamplesText.setFillColor(TextClr);
-
-        ArrayInsertText.setPosition(sf::Vector2f(20, 10));
-        DelayText.setPosition(sf::Vector2f(20, 28));
-        SortText.setPosition(sf::Vector2f(20, 46));
-        SamplesText.setPosition(sf::Vector2f(20, 64));
-
         std::string DelayStr("Delay : " + std::to_string(m_delay) + "ms");
         std::string SamplesStr("Array length : " + std::to_string(m_samples));
 
-        DelayText.setString(DelayStr.c_str());
-        SortText.setString(m_name.c_str());    
-        SamplesText.setString(SamplesStr.c_str());
-
-        while(m_mainWindow->isOpen())
+        while (m_mainWindow->isOpen())
         {
             sf::Event e;
             
-            while(m_mainWindow->pollEvent(e))
+            while (m_mainWindow->pollEvent(e))
             {
-                if(e.type == sf::Event::Closed)
+                if (e.type == sf::Event::Closed)
                     m_mainWindow->close();
 
-                if(e.type == sf::Event::KeyPressed)
+                if (e.type == sf::Event::KeyPressed)
                 {
                     if (e.key.code == sf::Keyboard::S)
                     {
-                        if(m_finished) {
+                        if (m_finished) 
+                        {
                             m_finished = false;
                             start_sorting();
                         }
@@ -182,31 +164,31 @@ public:
                 }
             }
 
-            
             m_mainWindow->clear(BackgroundClr);
 
             std::string ArrayInsertStr("Array changes : " + std::to_string(m_array_changes));
 
-            ArrayInsertText.setString(ArrayInsertStr.c_str());
-
-            m_mainWindow->draw(ArrayInsertText);
-            m_mainWindow->draw(DelayText);
-            m_mainWindow->draw(SortText);
-            m_mainWindow->draw(SamplesText);
+            displayText(ArrayInsertStr, sf::Vector2f(20, 10), TextClr, BebasNeue, m_mainWindow);
+            displayText(DelayStr, sf::Vector2f(20, 28), TextClr, BebasNeue, m_mainWindow);
+            displayText(m_name, sf::Vector2f(20, 48), TextClr, BebasNeue, m_mainWindow);
+            displayText(SamplesStr, sf::Vector2f(20, 64), TextClr, BebasNeue, m_mainWindow);
 
             const int TEXT_OFFSET = 100;
             for(int i = 0; i < m_samples; i++) 
             {
                 float block_height = transl(m_arr[i], 0, m_samples, 0, m_HEIGHT - TEXT_OFFSET);
-
                 
-                if(i - 1 == m_current_sortel)
+                if (i - 1 == m_current_sortel)
+                {
                     rect.setFillColor(CurrentElemClr);
-                else if(i - 1 == m_next_id)
+                }
+                else if (i - 1 == m_next_id)
+                {
                     rect.setFillColor(NextElemClr);
+                }
                 else
                 {
-                    if(i > m_section_first && i < m_section_last)
+                    if (i > m_section_first && i < m_section_last)
                         rect.setFillColor(SectionClr);
                     else
                         rect.setFillColor(ForegroundClr);
@@ -235,7 +217,6 @@ public:
 
     void randomize()
     {
-        
         std::random_device rd;
         std::mt19937 mt(rd());
         std::uniform_real_distribution<double> dist(0, m_samples);
