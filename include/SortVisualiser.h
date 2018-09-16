@@ -43,11 +43,8 @@ public:
         m_HEIGHT(height)
     {
         
-        m_name = "Algortihm : " +  algoName;
+        m_name = "Algorithm : " +  algoName;
 
-        // Last int will be used as a connection to the thread when it should terminate
-
-        m_arr[samples] = 0;
         m_SortAlgo = SortAlgoT(m_arr, m_samples);
 
         m_mainWindow = new sf::RenderWindow(
