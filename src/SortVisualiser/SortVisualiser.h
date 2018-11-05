@@ -5,6 +5,7 @@
 #include <random>
 #include <chrono>
 #include <thread>
+#include <ratio>
 
 #include "Sort.h"
 
@@ -45,6 +46,8 @@ private:
     bool m_finished{true};
     std::string m_name;
     SortAlgoT m_SortAlgo;
+    std::chrono::high_resolution_clock::time_point m_start;
+    std::chrono::high_resolution_clock::time_point m_end;
 public:
     SortVisualiser(int width, int height, int samples, float delay, std::string algoName)
     :   m_samples(samples), 
@@ -53,7 +56,7 @@ public:
         m_WIDTH(width),
         m_HEIGHT(height)
     {
-        
+
         m_name = "Algorithm : " +  algoName;
 
         m_SortAlgo = SortAlgoT(m_arr, m_samples);
@@ -68,6 +71,7 @@ public:
     void start_sorting()
     {
         m_array_changes = 0;
+        
         std::thread sort_thread(
             [&] () 
             {
@@ -99,6 +103,8 @@ public:
     void sort_func()
     {
         randomize();
+        m_start = std::chrono::high_resolution_clock::now();
+        m_finished = false;
         m_SortAlgo.sort();
         m_finished = true;
     }
@@ -135,7 +141,7 @@ public:
             "Sort"
         );
 
-        window.setFramerateLimit(60);
+        window.setVerticalSyncEnabled(true);
 
         while (window.isOpen())
         {
@@ -152,7 +158,6 @@ public:
                             case sf::Keyboard::S: 
                                 if(m_finished)
                                 {
-                                    m_finished = false;
                                     start_sorting();
                                 }
                             break;
@@ -169,6 +174,16 @@ public:
             displayText(DelayStr, sf::Vector2f(20, 28), TextClr, BebasNeue, &window);
             displayText(m_name, sf::Vector2f(20, 46), TextClr, BebasNeue, &window);
             displayText(SamplesStr, sf::Vector2f(20, 64), TextClr, BebasNeue, &window);
+
+            if(!m_finished)
+            {
+                m_end = std::chrono::high_resolution_clock::now();
+            }
+
+            std::chrono::duration<float, std::milli> time_passed = m_end - m_start;
+
+            std::string TimePassedStr("Time passed :" + std::to_string((float) time_passed.count()) + " ms");
+            displayText(TimePassedStr, sf::Vector2f(300, 10) ,TextClr, BebasNeue, &window);
 
             const int TEXT_OFFSET = 100;
             for(int i = 0; i < m_samples; i++) 
