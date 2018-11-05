@@ -1,5 +1,4 @@
-#ifndef SORT_H
-#define SORT_H
+#pragma once 
 
 #include <functional>
 #include <iostream>
@@ -42,5 +41,3 @@ public:
         std::cout << "\n";
     }
 };
-
-#endif

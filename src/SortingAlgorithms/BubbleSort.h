@@ -1,7 +1,6 @@
-#ifndef BUBBLE_SORT_H
-#define BUBBLE_SORT_H
+#pragma once
 
-#include "Sort.h"
+#include "../SortVisualiser/Sort.h"
 
 #include <iostream>
 
@@ -31,5 +30,3 @@ public:
         }
     }
 };
-
-#endif

@@ -1,13 +1,12 @@
-#ifndef SORT_VIS_H
-#define SORT_VIS_H
+#pragma once
 
 #include "SFML/Graphics.hpp"
+#include <iostream>
 #include <random>
 #include <chrono>
 #include <thread>
 
 #include "Sort.h"
-
 
 // Copied from another project i'm working on
 template<typename T, typename rtn_type>
@@ -45,12 +44,11 @@ private:
     int m_section_last{0};
     bool m_finished{true};
     std::string m_name;
-    sf::RenderWindow *m_mainWindow;
     SortAlgoT m_SortAlgo;
 public:
-    SortVisualiser(int width, int height, int samples, int delay, std::string algoName)
+    SortVisualiser(int width, int height, int samples, float delay, std::string algoName)
     :   m_samples(samples), 
-        m_delay(delay), 
+        m_delay(1000 * delay), 
         m_arr(new int[samples + 1]), 
         m_WIDTH(width),
         m_HEIGHT(height)
@@ -60,26 +58,16 @@ public:
 
         m_SortAlgo = SortAlgoT(m_arr, m_samples);
 
-        m_mainWindow = new sf::RenderWindow(
-            sf::VideoMode(m_WIDTH, m_HEIGHT),
-            "Sort"
-        );
-
         init_sort_algo();
 
-        std::thread window_thread(
-            [&] () 
-            {
-                spawn_window();
-            }
-        );
+        spawn_window();
 
-        window_thread.join();
         exit(0);
     }
 
     void start_sorting()
     {
+        m_array_changes = 0;
         std::thread sort_thread(
             [&] () 
             {
@@ -100,9 +88,9 @@ public:
                 m_next_id = nextid;
                 m_section_first = sstart;
                 m_section_last = send;
-
+                
                 std::this_thread::sleep_for(
-                    std::chrono::milliseconds(m_delay)
+                    std::chrono::microseconds(m_delay)
                 );
             }
         );
@@ -133,45 +121,54 @@ public:
 
         sf::Font BebasNeue;
 
-        if (!BebasNeue.loadFromFile("BebasNeue_Regular.otf"))
+        if (!BebasNeue.loadFromFile("res/BebasNeue-Regular.otf"))
         {
             std::cout << "Error loading font.\n";
             exit(0);
         }
 
-        std::string DelayStr("Delay : " + std::to_string(m_delay) + "ms");
-        std::string SamplesStr("Array length : " + std::to_string(m_samples));
+        std::string DelayStr("Delay : " + std::to_string((m_delay * 1.f) / 1000) + " ms");
+        std::string SamplesStr("Array length : " + std::to_string(m_samples));   
 
-        while (m_mainWindow->isOpen())
+        sf::RenderWindow window(
+            sf::VideoMode(m_WIDTH, m_HEIGHT),
+            "Sort"
+        );
+
+        window.setFramerateLimit(60);
+
+        while (window.isOpen())
         {
             sf::Event e;
             
-            while (m_mainWindow->pollEvent(e))
+            while (window.pollEvent(e))
             {
-                if (e.type == sf::Event::Closed)
-                    m_mainWindow->close();
-
-                if (e.type == sf::Event::KeyPressed)
+                switch (e.type)
                 {
-                    if (e.key.code == sf::Keyboard::S)
-                    {
-                        if (m_finished) 
+                    case sf::Event::Closed: window.close(); break;
+                    case sf::Event::KeyPressed:
+                        switch (e.key.code)
                         {
-                            m_finished = false;
-                            start_sorting();
+                            case sf::Keyboard::S: 
+                                if(m_finished)
+                                {
+                                    m_finished = false;
+                                    start_sorting();
+                                }
+                            break;
                         }
-                    }
+                    break;
                 }
             }
 
-            m_mainWindow->clear(BackgroundClr);
+            window.clear(BackgroundClr);
 
             std::string ArrayInsertStr("Array changes : " + std::to_string(m_array_changes));
 
-            displayText(ArrayInsertStr, sf::Vector2f(20, 10), TextClr, BebasNeue, m_mainWindow);
-            displayText(DelayStr, sf::Vector2f(20, 28), TextClr, BebasNeue, m_mainWindow);
-            displayText(m_name, sf::Vector2f(20, 48), TextClr, BebasNeue, m_mainWindow);
-            displayText(SamplesStr, sf::Vector2f(20, 64), TextClr, BebasNeue, m_mainWindow);
+            displayText(ArrayInsertStr, sf::Vector2f(20, 10), TextClr, BebasNeue, &window);
+            displayText(DelayStr, sf::Vector2f(20, 28), TextClr, BebasNeue, &window);
+            displayText(m_name, sf::Vector2f(20, 46), TextClr, BebasNeue, &window);
+            displayText(SamplesStr, sf::Vector2f(20, 64), TextClr, BebasNeue, &window);
 
             const int TEXT_OFFSET = 100;
             for(int i = 0; i < m_samples; i++) 
@@ -193,21 +190,20 @@ public:
                     else
                         rect.setFillColor(ForegroundClr);
                 }
-
+            
                 rect.setSize(
                     sf::Vector2f(block_width, -1 * block_height)
                 );
 
                 rect.setPosition(i*block_width, m_HEIGHT);
 
-                m_mainWindow->draw(rect);
-                
+                window.draw(rect);
             }
             
-
-            m_mainWindow->display();
+            window.display();
         }
     }
+
 
     // Helper
     void printarr()
@@ -225,7 +221,7 @@ public:
         {
             m_arr[i] = (int) dist(mt);
             std::this_thread::sleep_for(
-                std::chrono::milliseconds(m_delay)
+                std::chrono::microseconds(m_delay)
             );
         }
     }
@@ -235,5 +231,3 @@ public:
         delete []m_arr;
     }
 };
-
-#endif

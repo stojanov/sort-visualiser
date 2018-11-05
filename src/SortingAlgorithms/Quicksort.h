@@ -1,7 +1,6 @@
-#ifndef QUICKSORT_H
-#define QUICKSORT_H
+#pragma once
 
-#include "Sort.h"
+#include "../SortVisualiser/Sort.h"
 
 #include <iostream>
 
@@ -55,5 +54,3 @@ public:
         }
     }
 };
-
-#endif
