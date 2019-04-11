@@ -2,42 +2,30 @@
 
 #include <functional>
 #include <iostream>
+#include <chrono>
+#include <thread>
+#include <ratio>
+
+#include "SortState.h"
+
+typedef std::function<void()> voidCallback;
 
 class Sort
 {
 private:
-    std::function<void(int, int, int, int)> m_swap_func;
+    statePtr m_sortState;
+    voidCallback m_finishCallback;
 
 protected:
     int *m_arr;
     int m_l;
-    
-    void assign_arr(int *arr, int l) 
-    {
-        m_arr = arr;
-        m_l = l;
-    }
 
-    void swapped_item(int id, int next_id, int section_start, int section_end) 
-    {
-        m_swap_func(id, next_id, section_start, section_end);
-    };
-
+    void swapped_item(int id, int nextId, int sectionStart, int sectionEnd);
+    void onFinish();
 public:
-    Sort() {}
-    Sort(int *arr, int l) 
-    : m_arr(arr), m_l(l) {}
+    Sort() = default;
 
-    void assign_swap_func(std::function<void(int, int, int, int)> func) 
-    {
-        m_swap_func = func;
-    }
-
-    void printarr()
-    {
-        std::cout << "\n";
-        for(int i = 0; i < m_l; i++)
-            std::cout << " " << m_arr[i];
-        std::cout << "\n";
-    }
+    void initSortState(statePtr state);
+    void attachFinishCallback(voidCallback fn);
+    void printarr();
 };

@@ -17,6 +17,6 @@ add_executable(SortVisualiser ${SOURCES})
 
 ## Add and link libraries
 find_package(SFML 2.5.1 REQUIRED graphics network audio system)
-target_link_libraries(SortVisualiser sfml-graphics sfml-audio sfml-network)
+target_link_libraries(SortVisualiser -lpthread sfml-graphics)
 
 file(COPY ${CMAKE_SOURCE_DIR}/res DESTINATION ${CMAKE_BINARY_DIR})
